@@ -38,6 +38,28 @@ VOICE_SCRIPT = ("Thanks for calling. Sorry we missed your call. We will send you
                 "Reply STOP to opt out.")
 
 
+def _number() -> str:
+    return escape(os.environ.get("DEMO_NUMBER", "(509) 383-2644"))
+
+
+@legal.get("/")
+def home():
+    b, n = _brand(), _number()
+    tel = "+1" + "".join(ch for ch in n if ch.isdigit())[-10:]
+    return _page(b, f"""
+<p>{b} helps local service businesses in Central Washington never lose a customer to a missed call.
+When a call to the business goes unanswered, the caller gets one text so the business can follow up.</p>
+<h2>Try it: call {n}</h2>
+<p style="font-size:24px;margin:8px 0"><a href="tel:{tel}">{n}</a></p>
+<p>Call this number and let it go unanswered. You will hear a short message and then receive one text
+message from {b} at the number you called from.</p>
+<p><strong>SMS disclosure:</strong> By calling {n}, you agree to receive one text message about your call
+if it is not answered. Message frequency: one message per missed call. Message and data rates may apply.
+Reply STOP to opt out, HELP for help. See our <a href="/privacy">Privacy Policy</a> and
+<a href="/terms">Terms &amp; Conditions</a>.</p>
+""")
+
+
 @legal.get("/privacy")
 def privacy():
     b, c = _brand(), _contact()
