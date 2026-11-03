@@ -18,16 +18,19 @@ from twilio.twiml.voice_response import VoiceResponse
 
 import db
 import sms
+from legal import legal
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("missedcall")
 
 app = Flask(__name__)
+app.register_blueprint(legal)
 
 DUPLICATE_WINDOW_MIN = int(os.environ.get("DUPLICATE_WINDOW_MIN", "30"))
 STOP_WORDS = {"STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "OPTOUT", "REVOKE"}
 START_WORDS = {"START", "YES", "UNSTOP"}
+HELP_WORDS = {"HELP", "INFO"}
 US_NUMBER = re.compile(r"^\+1\d{10}$")
 
 
@@ -91,7 +94,7 @@ def voice():
         resp.hangup()
         return twiml(resp)
 
-    resp.say(client["voice_message"])
+    resp.say(client["voice_message"].replace("{business}", client["business_name"]))
     resp.hangup()
 
     # Decide whether to text.
@@ -148,6 +151,13 @@ def inbound_sms():
     if keyword in START_WORDS:
         db.opt_in(client["id"], sender)
         db.log_message(client["id"], sender, body, forwarded=False)
+        return twiml(resp)
+    if keyword in HELP_WORDS:
+        brand = os.environ.get("BRAND_NAME", "Missed Call Text Back Central WA")
+        contact = os.environ.get("CONTACT_EMAIL", "aidenjacklin@gmail.com")
+        resp.message(f"{brand}: missed-call text-back for {client['business_name']}. "
+                     f"Reply with your question and the business will follow up. Help: {contact}. "
+                     "Msg & data rates may apply. Reply STOP to opt out.")
         return twiml(resp)
 
     forward = f"New text from {pretty(sender)} (missed call):\n\"{body}\"\nCall or text them back directly."

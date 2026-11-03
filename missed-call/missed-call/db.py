@@ -46,10 +46,13 @@ CREATE INDEX IF NOT EXISTS idx_msgs_lookup ON messages(client_id, created_at);
 """
 
 DEFAULT_TEXT = (
-    "Hi, this is {business}. Sorry we missed your call! "
-    "What can we help you with? Reply STOP to opt out."
+    "Hi, this is {business}. Sorry we missed your call! What can we help you with? "
+    "Msg & data rates may apply. Reply STOP to opt out, HELP for help."
 )
-DEFAULT_VOICE = "Sorry we missed you. We're sending you a text right now."
+DEFAULT_VOICE = (
+    "Thanks for calling {business}. Sorry we missed your call. We will send you one text message "
+    "at this number so we can help you. Message and data rates may apply. Reply STOP to opt out."
+)
 
 
 def now() -> datetime:
